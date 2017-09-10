@@ -1,0 +1,3 @@
+cydream_platform_homepage:
+    path:     /
+    defaults: { _controller: CydreamPlatformBundle:Default:index }

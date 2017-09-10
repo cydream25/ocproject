@@ -1,3 +1,5 @@
-cydream_platform_homepage:
-    path:     /
-    defaults: { _controller: CydreamPlatformBundle:Default:index }
+hello_the_world:
+    path: /hello-world
+    defaults: {_controller:CydreamPlateformBundle:Advert:Index }
+
+    

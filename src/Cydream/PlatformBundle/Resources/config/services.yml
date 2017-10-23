@@ -2,3 +2,11 @@ services:
 #    cydream_platform.example:
 #        class: Cydream\PlatformBundle\Example
 #        arguments: ["@service_id", "plain_value", "%parameter%"]
+
+services:
+    cydream_platform.antispam:
+        class: Cydream\PlatformBundle\Antispam\OCAntispam
+            arguments:
+                - "@mailer"
+                - %locale%
+                - 50

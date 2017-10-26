@@ -1,0 +1,11 @@
+{% extends 'CoreBundle::base.html.twig' %}
+{% block body %}Page d'accueil<br/>
+
+    {% for flashMessage in app.session.flashbag.get('notice') %}
+
+        {{ flashMessage }}
+
+    {% endfor %}
+
+{% endblock %}
+

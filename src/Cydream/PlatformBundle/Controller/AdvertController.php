@@ -22,7 +22,7 @@ class AdvertController extends Controller
   }
 
   public function addAction(Request $request) {
-    if ($request->isMethod('PSOT')) {
+    if ($request->isMethod('POST')) {
       $request->getSession()->getFlashBag()->add('notice','Annonce bien enregistrée.');
       return $this->redirectToRoute('oc_platform_view',['id'=>5]);
     }

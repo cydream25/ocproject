@@ -3,6 +3,7 @@
 namespace Cydream\PlatformBundle\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints\DateTime;
 
 /**
  * Advert
@@ -12,6 +13,26 @@ use Doctrine\ORM\Mapping as ORM;
  */
 class Advert
 {
+    public function __construct()
+    {
+        $this->date = new \DateTime();
+    }
+
+    /**
+     * @ORM\ManyToMany(targetEntity="Cydream\PlatformBundle\Entity\Category", cascade={"persist"})
+     */
+    private $categories;
+
+    /**
+     * @ORM\OneToOne(targetEntity="Cydream\PlatformBundle\Entity\Image", cascade={"persist"})
+     */
+    private $image;
+
+    /**
+     * @ORM\Column(name="published", type="boolean")
+     */
+    private $published = true;
+
     /**
      * @var int
      *
@@ -155,5 +176,52 @@ class Advert
     {
         return $this->content;
     }
-}
 
+    /**
+     * Set published
+     *
+     * @param boolean $published
+     *
+     * @return Advert
+     */
+    public function setPublished($published)
+    {
+        $this->published = $published;
+
+        return $this;
+    }
+
+    /**
+     * Get published
+     *
+     * @return boolean
+     */
+    public function getPublished()
+    {
+        return $this->published;
+    }
+
+    /**
+     * Set image
+     *
+     * @param \Cydream\PlatformBundle\Entity\Image $image
+     *
+     * @return Advert
+     */
+    public function setImage(Image $image = null)
+    {
+        $this->image = $image;
+
+        return $this;
+    }
+
+    /**
+     * Get image
+     *
+     * @return \Cydream\PlatformBundle\Entity\Image
+     */
+    public function getImage()
+    {
+        return $this->image;
+    }
+}

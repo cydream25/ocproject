@@ -79,8 +79,30 @@ class AdvertController extends Controller
         $application1->setAdvert($advert);
         $application2->setAdvert($advert);
 
+        
         // On récupère l'EntityManager
         $em = $this->getDoctrine()->getManager();
+
+        // On récupère toutes les compétences possibles
+        $listSkills = $em->getRepository('CydreamPlatformBundle:Skill')->findAll();
+        
+        // Pour chaque compétence
+        foreach ($listSkills as $skill) {
+          // On crée une nouvelle « relation entre 1 annonce et 1 compétence »
+          $advertSkill = new AdvertSkill();
+    
+          // On la lie à l'annonce, qui est ici toujours la même
+          $advertSkill->setAdvert($advert);
+          // On la lie à la compétence, qui change ici dans la boucle foreach
+          $advertSkill->setSkill($skill);
+    
+          // Arbitrairement, on dit que chaque compétence est requise au niveau 'Expert'
+          $advertSkill->setLevel('Expert');
+    
+          // Et bien sûr, on persiste cette entité de relation, propriétaire des deux autres relations
+          $em->persist($advertSkill);
+        }
+    
 
         // Étape 1 : On « persiste » l'entité
         $em->persist($advert);
@@ -100,14 +122,14 @@ class AdvertController extends Controller
         $em = $this->getDoctrine()->getManager();
         
         // On récupère l'annonce $id
-        $advert = $em->getRepository('OCPlatformBundle:Advert')->find($id);
+        $advert = $em->getRepository('CydreamPlatformBundle:Advert')->find($id);
     
         if (null === $advert) {
             throw new NotFoundHttpException("L'annonce d'id ".$id." n'existe pas.");
         }
     
         // La méthode findAll retourne toutes les catégories de la base de données
-        $listCategories = $em->getRepository('OCPlatformBundle:Category')->findAll();
+        $listCategories = $em->getRepository('CydreamPlatformBundle:Category')->findAll();
     
         // On boucle sur les catégories pour les lier à l'annonce
         foreach ($listCategories as $category) {

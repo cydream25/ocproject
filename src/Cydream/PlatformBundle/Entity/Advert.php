@@ -17,6 +17,11 @@ class Advert
     {
         $this->date = new \DateTime();
     }
+  
+    /**
+    * @ORM\OneToMany(targetEntity="OC\PlatformBundle\Entity\Application", mappedBy="advert")
+    */
+    private $applications; // Notez le « s », une annonce est liée à plusieurs candidatures
 
     /**
      * @ORM\ManyToMany(targetEntity="Cydream\PlatformBundle\Entity\Category", cascade={"persist"})

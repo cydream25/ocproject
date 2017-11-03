@@ -5,12 +5,12 @@ namespace Cydream\PlatformBundle\Entity;
 use Doctrine\ORM\Mapping as ORM;
 
 /**
- * Category
+ * Skill
  *
- * @ORM\Table(name="category")
- * @ORM\Entity(repositoryClass="Cydream\PlatformBundle\Repository\CategoryRepository")
+ * @ORM\Table(name="skill")
+ * @ORM\Entity(repositoryClass="Cydream\PlatformBundle\Repository\SkillRepository")
  */
-class Category
+class Skill
 {
     /**
      * @var int
@@ -44,7 +44,7 @@ class Category
      *
      * @param string $name
      *
-     * @return Category
+     * @return Skill
      */
     public function setName($name)
     {

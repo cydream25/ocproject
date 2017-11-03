@@ -1,9 +1,15 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Bienvenue sur ma première page avec OpenClassrooms !</title>
-</head>
-<body>
-add
-</body>
-</html>
+
+{% extends "CydreamPlatformBundle::layout.html.twig" %}
+
+{% block body %}
+
+  <h2>Ajouter une annonce</h2>
+ {#
+  {{ include("CydreamPlatformBundle:Advert:form.html.twig") }}
+#}
+  <p>
+    Attention : cette annonce sera ajoutée directement
+    sur la page d'accueil après validation du formulaire.
+  </p>
+
+{% endblock %}

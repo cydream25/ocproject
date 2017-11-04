@@ -18,17 +18,30 @@ class AdvertController extends Controller
         if ($page < 1) {
             throw new NotFoundHttpException("Page '$page' inexistante.");
         }
-        return $this->render('CydreamPlatformBundle:Advert:index.html.twig');
+        $em = $this->getDoctrine()->getManager();
+        $adverts= $em->getRepository('CydreamPlatformBundle:Advert')->getAdverts($page,10);
+
+        // On calcule le nombre total de pages grâce au count($listAdverts) qui retourne le nombre total d'annonces
+        $nbPages = ceil(count($adverts) / $nbPerPage);
+
+        if ($page > $nbPages) {
+            throw new NotFoundHttpException("Page '$page' inexistante.");
+        }
+        return $this->render('CydreamPlatformBundle:Advert:index.html.twig',[
+            'listAdverts'=>$adverts,
+            'page'=>$page,
+            'nbPages'=>$nbPages,
+        ]);
     }
 
     public function viewAction($id)
     {
 
+        $em = $this->getDoctrine()
+            ->getManager();
+
         // On récupère le repository
-        $repository = $this->getDoctrine()
-            ->getManager()
-            ->getRepository('CydreamPlatformBundle:Advert')
-        ;
+        $repository = $em->getRepository('CydreamPlatformBundle:Advert');
 
         // On récupère l'entité correspondante à l'id $id
         $advert = $repository->find($id);
@@ -39,9 +52,15 @@ class AdvertController extends Controller
             throw new NotFoundHttpException("L'annonce d'id ".$id." n'existe pas.");
         }
 
+        $applications = $em->getRepository('CydreamPlatformBundle:Application')->findBy(['advert'=>$advert]);
+
+        $advertSkills = $em->getRepository('CydreamPlatformBundle:AdvertSkill')->findBy(['advert'=>$advert]);
+
         // Le render ne change pas, on passait avant un tableau, maintenant un objet
         return $this->render('CydreamPlatformBundle:Advert:view.html.twig', array(
-            'advert' => $advert
+            'advert' => $advert,
+            "applications" => $applications,
+            'listAdvertSkills' => $advertSkills,
         ));
 
 

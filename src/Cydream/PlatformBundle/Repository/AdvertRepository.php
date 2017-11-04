@@ -10,4 +10,10 @@ namespace Cydream\PlatformBundle\Repository;
  */
 class AdvertRepository extends \Doctrine\ORM\EntityRepository
 {
+    public function getAdvertWithCategories(array $categoryNames)
+    {
+        $qb = $this->createQueryBuilder("a")->innerJoin('a.categories','c')->addSelect('c');
+        $qb->where($qb->expr()->in('c.name',$categoryNames));
+        return $qb->getQuerry()->getResult();
+    }
 }

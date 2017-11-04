@@ -9,16 +9,32 @@ use Doctrine\ORM\Mapping as ORM;
  *
  * @ORM\Table(name="application")
  * @ORM\Entity(repositoryClass="Cydream\PlatformBundle\Repository\ApplicationRepository")
+ * @ORM\HasLifeCycleCallbacks()
  */
 class Application
 {
     /**
-     * @ORM\ManyToOne(targetEntity="Cydream\PlatformBundle\Entity\Advert")
+     * @ORM\ManyToOne(targetEntity="Cydream\PlatformBundle\Entity\Advert", inversedBy="applications")
      * @ORM\JoinColumn(nullable=false)
      */
     private $advert;
 
     /**
+     * @ORM\PrePersist
+     */
+    public function increase()
+    {
+        $this->getAdvert()->increaseApplication();
+    }
+
+    /**
+     * @ORM\PreRemove
+     */
+    public function decrease()
+    {
+        $this->getAdvert()->decreaseApplication();
+    }
+        /**
      * @var int
      *
      * @ORM\Column(name="id", type="integer")

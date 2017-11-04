@@ -33,7 +33,7 @@ class AdvertController extends Controller
         // On récupère l'entité correspondante à l'id $id
         $advert = $repository->find($id);
 
-        // $advert est donc une instance de OC\PlatformBundle\Entity\Advert
+        // $advert est donc une instance de Cydream\PlatformBundle\Entity\Advert
         // ou null si l'id $id  n'existe pas, d'où ce if :
         if (null === $advert) {
             throw new NotFoundHttpException("L'annonce d'id ".$id." n'existe pas.");

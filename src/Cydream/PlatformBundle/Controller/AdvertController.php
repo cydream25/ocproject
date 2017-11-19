@@ -10,16 +10,21 @@ use Symfony\Component\HttpFoundation\Request;
 use Cydream\PlatformBundle\Entity\Advert;
 use Cydream\PlatformBundle\Entity\Image;
 use Cydream\PlatformBundle\Entity\Application;
+use Cydream\PlatformBundle\Form\AdvertType;
+use Cydream\PlatformBundle\Form\AdvertEditType;
+
 
 class AdvertController extends Controller
 {
     public function indexAction($page)
     {
+        $nbPerPage =    3;
+
         if ($page < 1) {
             throw new NotFoundHttpException("Page '$page' inexistante.");
         }
         $em = $this->getDoctrine()->getManager();
-        $adverts= $em->getRepository('CydreamPlatformBundle:Advert')->getAdverts($page,10);
+        $adverts= $em->getRepository('CydreamPlatformBundle:Advert')->getAdverts($page,$nbPerPage);
 
         // On calcule le nombre total de pages grâce au count($listAdverts) qui retourne le nombre total d'annonces
         $nbPages = ceil(count($adverts) / $nbPerPage);
@@ -70,70 +75,54 @@ class AdvertController extends Controller
     {
         // Création de l'entité
         $advert = new Advert();
-        $advert->setTitle('Recherche développeur Symfony.');
-        $advert->setAuthor('Alexandre');
-        $advert->setContent("Nous recherchons un développeur Symfony débutant sur Lyon. Blabla…");
-        // On peut ne pas définir ni la date ni la publication,
-        // car ces attributs sont définis automatiquement dans le constructeur
 
-        // Création de l'entité Image
-        $image = new Image();
-        $image->setUrl('http://sdz-upload.s3.amazonaws.com/prod/upload/job-de-reve.jpg');
-        $image->setAlt('Job de rêve');
+        $form = $this->createForm(AdvertType::class, $advert);
+        /*
+        $formBuilder=$this->get('form.factory')->createBuilder(FormType::class,$advert);
 
-        // On lie l'image à l'annonce
-        $advert->setImage($image);
+        $formBuilder
+            ->add('date',DateType::class)
+            ->add('title',TextType::class)
+            ->add('content',TextareaType::class)
+            ->add('author',TextType::class)
+            ->add('published',CheckboxType::class, array('required' => false))
+            ->add('save',SubmitType::class);
 
-        // Création d'une première candidature
-        $application1 = new Application();
-        $application1->setAuthor('Marine');
-        $application1->setContent("J'ai toutes les qualités requises.");
-
-        // Création d'une deuxième candidature par exemple
-        $application2 = new Application();
-        $application2->setAuthor('Pierre');
-        $application2->setContent("Je suis très motivé.");
-
-        // On lie les candidatures à l'annonce
-        $application1->setAdvert($advert);
-        $application2->setAdvert($advert);
-
-        
-        // On récupère l'EntityManager
-        $em = $this->getDoctrine()->getManager();
-
-        // On récupère toutes les compétences possibles
-        $listSkills = $em->getRepository('CydreamPlatformBundle:Skill')->findAll();
-        
-        // Pour chaque compétence
-        foreach ($listSkills as $skill) {
-          // On crée une nouvelle « relation entre 1 annonce et 1 compétence »
-          $advertSkill = new AdvertSkill();
-    
-          // On la lie à l'annonce, qui est ici toujours la même
-          $advertSkill->setAdvert($advert);
-          // On la lie à la compétence, qui change ici dans la boucle foreach
-          $advertSkill->setSkill($skill);
-    
-          // Arbitrairement, on dit que chaque compétence est requise au niveau 'Expert'
-          $advertSkill->setLevel('Expert');
-    
-          // Et bien sûr, on persiste cette entité de relation, propriétaire des deux autres relations
-          $em->persist($advertSkill);
-        }
-    
-
-        // Étape 1 : On « persiste » l'entité
-        $em->persist($advert);
-
-        // Étape 2 : On « flush » tout ce qui a été persisté avant
-        $em->flush();
-
+         $form = $formBuilder->getForm();
+        */
+        // Si la requête est en POST
         if ($request->isMethod('POST')) {
-            $request->getSession()->getFlashBag()->add('notice', 'Annonce bien enregistrée.');
-            return $this->redirectToRoute('oc_platform_view', ['id' => $advert->getId()]);
+            // On fait le lien Requête <-> Formulaire
+            // À partir de maintenant, la variable $advert contient les valeurs entrées dans le formulaire par le visiteur
+            $form->handleRequest($request);
+
+            // On vérifie que les valeurs entrées sont correctes
+            // (Nous verrons la validation des objets en détail dans le prochain chapitre)
+            if ($form->isValid()) {
+
+                // Ajoutez cette ligne :
+                // c'est elle qui déplace l'image là où on veut les stocker
+                $advert->getImage()->upload();
+      
+                // On enregistre notre objet $advert dans la base de données, par exemple
+                $em = $this->getDoctrine()->getManager();
+                $em->persist($advert);
+                $em->flush();
+
+                
+                $request->getSession()->getFlashBag()->add('notice', 'Annonce bien enregistrée.');
+
+                // On redirige vers la page de visualisation de l'annonce nouvellement créée
+                return $this->redirectToRoute('oc_platform_view', array('id' => $advert->getId()));
+            }
         }
-        return $this->render('CydreamPlatformBundle:Advert:add.html.twig');
+
+        // À ce stade, le formulaire n'est pas valide car :
+        // - Soit la requête est de type GET, donc le visiteur vient d'arriver sur la page et veut voir le formulaire
+        // - Soit la requête est de type POST, mais le formulaire contient des valeurs invalides, donc on l'affiche de nouveau
+        return $this->render('CydreamPlatformBundle:Advert:add.html.twig', array(
+        'form' => $form->createView(),
+        ));
     }
 
     public function editAction($id, Request $request)
@@ -147,13 +136,8 @@ class AdvertController extends Controller
             throw new NotFoundHttpException("L'annonce d'id ".$id." n'existe pas.");
         }
     
-        // La méthode findAll retourne toutes les catégories de la base de données
-        $listCategories = $em->getRepository('CydreamPlatformBundle:Category')->findAll();
-    
-        // On boucle sur les catégories pour les lier à l'annonce
-        foreach ($listCategories as $category) {
-            $advert->addCategory($category);
-        }
+        $form = $this->createForm(AdvertEditType::class, $advert);        
+
     
         // Pour persister le changement dans la relation, il faut persister l'entité propriétaire
         // Ici, Advert est le propriétaire, donc inutile de la persister car on l'a récupérée depuis Doctrine
@@ -162,14 +146,43 @@ class AdvertController extends Controller
         $em->flush();
 
         if ($request->isMethod('POST')) {
-            $request->getSession()->getFlashBag()->add('notice', 'Annonce bien modifiée');
-            return $this->redirectToRoute('oc_platform_view', ['id' => 5]);
+            $form->handleRequest($request);
+            if ($form->isValid()) {
+                $request->getSession()->getFlashBag()->add('notice', 'Annonce bien modifiée');
+                return $this->redirectToRoute('oc_platform_view', ['id' => 5]);
+            }
         }
-        return $this->render('CydreamPlatformBundle:Advert:edit.html.twig'); //Pas de parametre pour peupler le formulaire d'edition ???
+        return $this->render('CydreamPlatformBundle:Advert:edit.html.twig',[
+            'form'=>$form->createView(),
+            'advert'=>$form->createView(),
+        ]); 
     }
 
-    public function deleteAction($id)
+    public function deleteAction($id, Request $request)
     {
-        return $this->render('CydreamPlatformBundle:Advert:delete.html.twig');
-    }
+        $em = $this->getDoctrine()->getManager();
+        
+            $advert = $em->getRepository('CydreamPlatformBundle:Advert')->find($id);
+        
+            if (null === $advert) {
+              throw new NotFoundHttpException("L'annonce d'id ".$id." n'existe pas.");
+            }
+        
+            // On crée un formulaire vide, qui ne contiendra que le champ CSRF
+            // Cela permet de protéger la suppression d'annonce contre cette faille
+            $form = $this->get('form.factory')->create();
+        
+            if ($request->isMethod('POST') && $form->handleRequest($request)->isValid()) {
+              $em->remove($advert);
+              $em->flush();
+        
+              $request->getSession()->getFlashBag()->add('info', "L'annonce a bien été supprimée.");
+        
+              return $this->redirectToRoute('oc_platform_home');
+            }
+            
+            return $this->render('CydreamPlatformBundle:Advert:delete.html.twig', array(
+              'advert' => $advert,
+              'form'   => $form->createView(),
+            ));    }
 }

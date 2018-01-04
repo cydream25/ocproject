@@ -6,6 +6,7 @@ use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints\DateTime;
 // N'oubliez pas ce use :
 use Gedmo\Mapping\Annotation as Gedmo;
+use Symfony\Component\Validator\Constraints as Assert;
 
 /**
  * Advert
@@ -20,13 +21,14 @@ class Advert
     {
         $this->date = new \DateTime();
     }
-  
+
     /**
-    * @ORM\PreUpdate
-    */
+     * @ORM\PreUpdate
+     * @Assert\DateTime()
+     */
     public function updateDate()
     {
-      $this->setUpdatedAt(new \Datetime());
+        $this->setUpdatedAt(new \Datetime());
     }
 
     /**
@@ -34,19 +36,19 @@ class Advert
      * @ORM\Column(name="slug", type="string", length=255, unique=true)
      */
     private $slug;
-        /**
-    * @ORM\Column(name="nb_applications", type="integer")
-    */
-    private $nbApplications =0;
+    /**
+     * @ORM\Column(name="nb_applications", type="integer")
+     */
+    private $nbApplications = 0;
 
     public function increaseApplication()
     {
-      $this->nbApplications++;
+        $this->nbApplications++;
     }
-  
+
     public function decreaseApplication()
     {
-      $this->nbApplications--;
+        $this->nbApplications--;
     }
 
     /**
@@ -55,10 +57,10 @@ class Advert
      * @ORM\Column(name="updated_at", type="datetime", nullable=true)
      */
     private $updatedAt;
-    
+
     /**
-    * @ORM\OneToMany(targetEntity="Cydream\PlatformBundle\Entity\Application", mappedBy="advert")
-    */
+     * @ORM\OneToMany(targetEntity="Cydream\PlatformBundle\Entity\Application", mappedBy="advert")
+     */
     private $applications; // Notez le « s », une annonce est liée à plusieurs candidatures
 
     /**
@@ -68,6 +70,7 @@ class Advert
 
     /**
      * @ORM\OneToOne(targetEntity="Cydream\PlatformBundle\Entity\Image", cascade={"persist"})
+     * @Assert\Valid()
      */
     private $image;
 
@@ -89,6 +92,7 @@ class Advert
      * @var \DateTime
      *
      * @ORM\Column(name="date", type="datetime")
+     * @Assert\DateTime()
      */
     private $date;
 
@@ -96,6 +100,7 @@ class Advert
      * @var string
      *
      * @ORM\Column(name="title", type="string", length=255)
+     * @Assert\Length(min=10)
      */
     private $title;
 
@@ -103,6 +108,7 @@ class Advert
      * @var string
      *
      * @ORM\Column(name="author", type="string", length=255)
+     * @Assert\Length(min=2)
      */
     private $author;
 
@@ -110,6 +116,7 @@ class Advert
      * @var string
      *
      * @ORM\Column(name="content", type="text")
+     * @Assert\NotBlank()
      */
     private $content;
 
